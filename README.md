@@ -26,4 +26,4 @@ KDBXcrack -f <FILE> -w <WORDLIST>
 
 ### Dependencies
 
-- keepassxc-cli
+- [keepassxc-cli](https://man.archlinux.org/man/keepassxc-cli.1.en)
