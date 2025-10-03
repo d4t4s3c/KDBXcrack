@@ -1,2 +1,3 @@
 # KDBXcrack
-Get the master password from a KeePass database.
+
+Get the master password from a KeePass database file.
