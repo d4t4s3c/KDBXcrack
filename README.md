@@ -7,6 +7,7 @@
 
 This tool is ideal if you are unable to crack a master password from a [KeePass](https://keepass.info/) database due to incompatibility with version 4.x with [keepass2john](https://github.com/openwall/john/blob/bleeding-jumbo/src/keepass2john.c) and it displays the following error:
 
+> [!WARNING]
 >! database.kdbx : File version '40000' is currently not supported!
 
 ![](screenshot.png)
