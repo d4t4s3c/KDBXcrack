@@ -42,7 +42,7 @@ function banner(){
 
 function help(){
   echo -e "\n Usage: ${COLORS[GREEN]}KDBXcrack ${COLORS[RED]}[OPTIONS]${COLORS[END]}\n"
-  echo -e "   Get the master password from a KeePass database file.\n"
+  echo -e "   Get the master password from a KeePass database file (KDBX v4.x).\n"
   echo -e " Options:"
   echo -e "   ${COLORS[GREEN]}-f ${COLORS[RED]}<FILE>${COLORS[END]}      Specify the path where the KeePass database file is located."
   echo -e "   ${COLORS[GREEN]}-w ${COLORS[RED]}<WORDLIST>${COLORS[END]}  Specify the path where the wordlist is located."
