@@ -1,0 +1,105 @@
+#!/bin/bash
+
+declare -A COLORS=(
+  [RED]="\e[91m"
+  [GREEN]="\e[92m"
+  [YELLOW]="\e[93m"
+  [GREY]="\e[90m"
+  [BLUE]="\e[94m"
+  [WHITE]="\e[97m"
+  [END]="\e[0m"
+)
+
+declare -A GLOBAL=(
+  [SEP]="─────────────────────────────────"
+  [BOX1]="[+]"
+  [BOX2]="[-]"
+  [BOX3]="[*]"
+  [BOX4]="[i]"
+)
+
+trap ctrl_c INT
+
+function dependencies(){
+  which keepassxc-cli &>/dev/null
+  if [ "$(echo $?)" != "0" ]; then
+    apt install -y keepassx &>/dev/null
+  fi
+}
+
+function banner(){
+  echo
+  echo -e "${COLORS[GREEN]}╭╮╭━┳━━━┳━━╮╭━╮╭━╮           ╭╮  ${COLORS[END]}"
+  echo -e "${COLORS[GREEN]}┃┃┃╭┻╮╭╮┃╭╮┃╰╮╰╯╭╯           ┃┃  ${COLORS[END]}"
+  echo -e "${COLORS[GREEN]}┃╰╯╯ ┃┃┃┃╰╯╰╮╰╮╭╯ ╭━━┳━┳━━┳━━┫┃╭╮${COLORS[END]}"
+  echo -e "${COLORS[GREEN]}┃╭╮┃ ┃┃┃┃╭━╮┃╭╯╰╮ ┃╭━┫╭┫╭╮┃╭━┫╰╯╯${COLORS[END]}"
+  echo -e "${COLORS[GREEN]}┃┃┃╰┳╯╰╯┃╰━╯┣╯╭╮╰╮┃╰━┫┃┃╭╮┃╰━┫╭╮╮${COLORS[END]}"
+  echo -e "${COLORS[GREEN]}╰╯╰━┻━━━┻━━━┻━╯╰━╯╰━━┻╯╰╯╰┻━━┻╯╰╯${COLORS[END]}"
+  echo -e "${GLOBAL[SEP]}"
+  echo -e " ${COLORS[WHITE]}code: ${COLORS[GREY]}d4t4s3c   ${COLORS[WHITE]}version: ${COLORS[GREY]}v1.0.0${COLORS[END]}"
+  echo -e "${GLOBAL[SEP]}"
+}
+
+function help(){
+  echo -e "\n Usage: ${COLORS[GREEN]}KDBXcrack ${COLORS[RED]}[OPTIONS]${COLORS[END]}\n"
+  echo -e "   Get the master password from a KeePass database.\n"
+  echo -e " Options:"
+  echo -e "   ${COLORS[GREEN]}-f ${COLORS[RED]}<FILE>${COLORS[END]}      Specify the path where the KeePass database file is located."
+  echo -e "   ${COLORS[GREEN]}-w ${COLORS[RED]}<WORDLIST>${COLORS[END]}  Specify the path where the wordlist is located."
+  echo -e "   ${COLORS[GREEN]}-h ${COLORS[RED]}<HELP>${COLORS[END]}      Display this help message and exit.\n"
+  echo -e " Examples:"
+  echo -e "   ${COLORS[GREEN]}KDBXcrack -f database.kdbx -w rockyou.txt${COLORS[END]}"
+  echo -e "   ${COLORS[GREEN]}KDBXcrack -h${COLORS[END]}\n"
+  echo -e "${GLOBAL[SEP]}\n"
+}
+
+function info(){
+  echo -e "${COLORS[YELLOW]}${GLOBAL[BOX4]} ${COLORS[WHITE]}Cracking | ${COLORS[YELLOW]}${FILE}${COLORS[END]}"
+  echo -e "${COLORS[YELLOW]}${GLOBAL[BOX4]} ${COLORS[WHITE]}Wordlist | ${COLORS[YELLOW]}${WORDLIST}${COLORS[END]}"
+}
+
+function ctrl_c(){
+  echo
+  tput cnorm
+  exit 1
+}
+
+while getopts ":f:w:" ARG; do
+  case ${ARG} in
+    f) FILE=${OPTARG}; let parameter_counter+=1 ;;
+    w) WORDLIST=${OPTARG}; let parameter_counter+=1 ;;
+  esac
+done
+
+if [[ -n "${FILE}" && -n "${WORDLIST}" ]]; then
+  dependencies
+  banner
+  info
+else
+  banner
+  help
+  exit 0
+fi
+
+LINES=$(wc -l ${WORDLIST})
+REGEX="([0-9]+).${WORDLIST}"
+[[ ${LINES} =~ ${REGEX} ]]
+SIZ="${BASH_REMATCH[1]}"
+while IFS= read -r PASSWORD; do
+  LINE=$((LINE + 1))
+  PROGRESS=$((LINE * 100 / SIZ))
+  echo -ne "\e[?25l\r\033[K${COLORS[BLUE]}${GLOBAL[BOX3]} ${COLORS[WHITE]}Status   | ${COLORS[BLUE]}${LINE}/${SIZ}/${PROGRESS}%/${PASSWORD}${COLORS[END]}"
+  /bin/echo ${PASSWORD} | keepassxc-cli open ${FILE} &> /dev/null
+  if [ $? -eq 0 ]; then
+    echo -e "\n${COLORS[GREEN]}${GLOBAL[BOX1]} ${COLORS[WHITE]}Password | ${COLORS[GREEN]}${PASSWORD}${COLORS[END]}"
+    echo -e "${GLOBAL[SEP]}\n"
+    sleep 2
+    tput cnorm
+    exit 0
+  fi
+done < ${WORDLIST}
+echo -e "\n${COLORS[RED]}${GLOBAL[BOX2]} ${COLORS[WHITE]}Fuck!    | ${COLORS[RED]}Password not found${COLORS[END]}"
+echo -e "${GLOBAL[SEP]}\n"
+sleep 2
+tput cnorm
+exit 0
